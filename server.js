@@ -12,8 +12,7 @@ const db = mysql.createConnection(
     // console.log('Connected to the employees_db database')
 );
 
-
-
+// Star program
 function init() {
     // Logo
     console.log(String.raw`
@@ -34,5 +33,5 @@ function init() {
     getUserSelection(db);
 }
 
-// Star program
+
 init();
