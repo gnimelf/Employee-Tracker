@@ -25,7 +25,7 @@ const userOptions = [
 let newDBData;
 
 // Add a Department to the db
-function addDepartment(){
+function addDepartment() {
     inquirer
         .prompt({
             type: "input",
@@ -49,8 +49,21 @@ function addDepartment(){
         });
 }
 
+// Display all departments in the db
+function viewAllDepartments() {
+    db.query(
+        `SELECT * FROM department
+    ORDER BY department.name`,
+        (err, data) => {
+            if (err) throw err;
+            console.table(data);
+            getUserSelection(newDBData);
+        }
+    );
+}
+
 // Display all Roles in db
-function viewRoles(){
+function viewRoles() {
     return newDBData.query(
         `
         SELECT role.id, 
@@ -66,11 +79,10 @@ function viewRoles(){
             getUserSelection(newDBData);
         }
     );
-
 }
 
-// Display all Departments in db
-function viewAllDepartments(){
+// Display all Employee in db
+function viewAllEmployees() {
     db.query(
         `
         SELECT 
@@ -100,7 +112,7 @@ function getUserSelection(db) {
         .then((answers) => {
             // user answer to make db calls
             if (answers.option == "View All Employees") {
-                viewAllDepartments();
+                viewAllEmployees();
             } else if (answers.option == "Add employee") {
                 console.log("will add employee");
             } else if (answers.option == "Update Employee Role") {
@@ -110,15 +122,7 @@ function getUserSelection(db) {
             } else if (answers.option == "Add Role") {
                 console.log("will add role");
             } else if (answers.option == "View All Departments") {
-                db.query(
-                    `SELECT * FROM department
-                ORDER BY department.name`,
-                    (err, data) => {
-                        if (err) throw err;
-                        console.table(data);
-                        getUserSelection(newDBData);
-                    }
-                );
+                viewAllDepartments();
             } else if (answers.option == "Add Department") {
                 addDepartment(newDBData);
             } else {
