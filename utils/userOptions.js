@@ -22,7 +22,10 @@ const userOptions = [
     },
 ];
 
-function addDepartment(db) {
+let newDBData;
+
+function addDepartment() {
+    console.log(newDBData);
     inquirer
         .prompt({
             type: "input",
@@ -31,24 +34,15 @@ function addDepartment(db) {
         })
         .then((answer) => {
             // console.log(`Your entered ${answer.newDepartment}`);
-            db.query(
-                `INSERT INTO department VALUES (${answer.newDepartment})`,
+            newDBData.query(
+                `INSERT INTO department (name)
+                VALUES ("${answer.newDepartment}")`,
                 (err, data) => {
                     if (err) throw err;
                     console.table(data);
-                    getUserSelection(db);
+                    getUserSelection(newDBData);
                 }
             );
-
-            // db.query(
-            //     `INSERT INTO department VALUES (${answer.newDepartment})`,
-            //     (err, data) => {
-            //         if (err) throw err;
-            //         console.log(data);
-            //         getUserSelection(db);
-            //     }
-            // );
-            getUserSelection(db);
         })
         .catch((err)=>{
             if (err) throw  err;
@@ -57,14 +51,13 @@ function addDepartment(db) {
 
 // Get user questions
 function getUserSelection(db) {
+    newDBData = db;
     inquirer
         .prompt(userOptions)
         .then((answers) => {
             // user answer to make db calls
             if (answers.option == "View All Employees") {
                 db.query(
-                    // TODO: FIX role.department_id from number to name
-                    // CONCAT(mgr.first_name, " ", mgr.last_name as manager
                     `
                     SELECT 
                     employee.id, 
@@ -80,7 +73,7 @@ function getUserSelection(db) {
                     (err, data) => {
                         if (err) throw err;
                         console.table(data);
-                        getUserSelection(db);
+                        getUserSelection(newDBData);
                     }
                 );
             } else if (answers.option == "Add employee") {
@@ -100,7 +93,7 @@ function getUserSelection(db) {
                     (err, data) => {
                         if (err) throw err;
                         console.table(data);
-                        getUserSelection(db);
+                        getUserSelection(newDBData);
                     }
                 );
             } else if (answers.option == "Add Role") {
@@ -112,11 +105,11 @@ function getUserSelection(db) {
                     (err, data) => {
                         if (err) throw err;
                         console.table(data);
-                        getUserSelection(db);
+                        getUserSelection(newDBData);
                     }
                 );
             } else if (answers.option == "Add Department") {
-                addDepartment();
+                addDepartment(newDBData);
             } else {
                 process.exit(0);
             }
