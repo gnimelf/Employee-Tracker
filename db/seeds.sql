@@ -1,17 +1,29 @@
 INSERT INTO department (name)
-VALUES ("IT"),
-       ("Sales"),
-       ("Marketing"),
-       ("Development");
+VALUES ("Sales"),
+       ("Engineering"),
+       ("Finance"),
+       ("Legal");
 
 INSERT INTO role (title, salary, department_id)
-VALUES ('Developer', 130000, 4),
-       ('Salesman', 80000, 2),
-       ('Tech', 75000, 1),
-       ('Marketing analyst', 85000, 3);
+VALUES ('Sales Lead', 100000, 1),
+       ('Salesperson', 80000, 1),
+       ('Lead Engineer', 150000, 2),
+       ('Software Engineer', 120000, 2),
+       ('Account Manager', 160000, 3),
+       ('Accountant', 125000, 3),
+       ('Legal Team Lead', 250000, 4),
+       ('Lawyer', 190000, 4);
 
-INSERT INTO employee (first_name, last_name, manager_id, role_id)
-VALUES ('John', 'Doe', 1, 1),
-       ('Kate', 'Bush', 1, 3),
-       ('Kim', 'Due', 2, 2);
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUES ('John', 'Doe', 1, null),
+       ('Mike', 'Chan', 2, 1),
+       ('Ashley', 'Rodriquez', 3, null),
+       ('Kevin', 'Tupik', 4, 3),
+       ('Kunal', 'Singh', 5, null),
+       ('Malia', 'Brown', 6, 5),
+       ('Sarah', 'Lourd', 7, null),
+       ('Tom', 'Allen', 8, 7);
  
+-- Add update to change manager number to name
+-- UPDATE employee SET name = CONST(first_name, "' ", last_name)
+-- WHERE id = 1;

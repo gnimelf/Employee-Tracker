@@ -10,35 +10,90 @@ const userOptions = [
         name: "option",
         message: "Please choose an option: ",
         choices: [
-            "view all departments",
-            "view all roles",
-            "view all employees",
-            "add a department",
-            "add an employee",
-            "update an employee role",
-            "quit",
+            "View All Employees",
+            "Add Employee",
+            "Update Employee Role",
+            "View All Roles",
+            "Add Role",
+            "View All Departments",
+            "Add Department",
+            "Quit",
         ],
     },
 ];
+
+function addDepartment(db) {
+    inquirer
+        .prompt({
+            type: "input",
+            message: "What is the name of the department?",
+            name: "newDepartment",
+        })
+        .then((answer) => {
+            // console.log(`Your entered ${answer.newDepartment}`);
+            db.query(
+                `INSERT INTO department VALUES (${answer.newDepartment})`,
+                (err, data) => {
+                    if (err) throw err;
+                    console.table(data);
+                    getUserSelection(db);
+                }
+            );
+
+            // db.query(
+            //     `INSERT INTO department VALUES (${answer.newDepartment})`,
+            //     (err, data) => {
+            //         if (err) throw err;
+            //         console.log(data);
+            //         getUserSelection(db);
+            //     }
+            // );
+            getUserSelection(db);
+        })
+        .catch((err)=>{
+            if (err) throw  err;
+        });
+}
 
 // Get user questions
 function getUserSelection(db) {
     inquirer
         .prompt(userOptions)
-
         .then((answers) => {
             // user answer to make db calls
-            if (answers.option == "view all departments") {
-                db.query(`SELECT * FROM department`, (err, data) => {
-                    if (err) throw err;
-                    console.table(data);
-                    getUserSelection(db);
-                });
-                //
-            } else if (answers.option == "view all roles") {
+            if (answers.option == "View All Employees") {
+                db.query(
+                    // TODO: FIX role.department_id from number to name
+                    // CONCAT(mgr.first_name, " ", mgr.last_name as manager
+                    `
+                    SELECT 
+                    employee.id, 
+                    employee.first_name, 
+                    employee.last_name, 
+                    role.title,role.salary, 
+                    department.name as department, 
+                    CONCAT(mgr.first_name, " ", mgr.last_name) as manager
+                    FROM employee 
+                    LEFT JOIN role ON role.id = employee.role_id 
+                    LEFT JOIN department ON department.id = role.department_id 
+                    LEFT JOIN employee as mgr ON employee.id = mgr.manager_id`,
+                    (err, data) => {
+                        if (err) throw err;
+                        console.table(data);
+                        getUserSelection(db);
+                    }
+                );
+            } else if (answers.option == "Add employee") {
+                console.log("will add employee");
+            } else if (answers.option == "Update Employee Role") {
+                console.log("will update employee");
+            } else if (answers.option == "View All Roles") {
                 db.query(
                     `
-                    SELECT role.id, role.title, department.name as department, role.salary 
+                    SELECT role.id, 
+                    role.title, 
+                    department.name as department, 
+                    role.salary 
                     FROM role 
                     LEFT JOIN department 
                     ON role.department_id=department.id`,
@@ -48,22 +103,20 @@ function getUserSelection(db) {
                         getUserSelection(db);
                     }
                 );
-            } else if (answers.option == "view all employees") {
+            } else if (answers.option == "Add Role") {
+                console.log("will add role");
+            } else if (answers.option == "View All Departments") {
                 db.query(
-                    `
-                    SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name as department, role.salary, employee.manager_id as manager
-                    FROM employee 
-                    JOIN role 
-                    ON role.id=employee.role_id 
-                    JOIN department 
-                    ON department.id=role.department_id `,
+                    `SELECT * FROM department
+                ORDER BY department.name`,
                     (err, data) => {
                         if (err) throw err;
                         console.table(data);
                         getUserSelection(db);
                     }
                 );
-                //
+            } else if (answers.option == "Add Department") {
+                addDepartment();
             } else {
                 process.exit(0);
             }
@@ -72,5 +125,7 @@ function getUserSelection(db) {
             console.log(err);
         });
 }
+
+function addEmployee() {}
 
 module.exports = { getUserSelection };
