@@ -24,12 +24,12 @@ const userOptions = [
 
 let newDBData;
 
+// Add a Department to the db
 function addDepartment() {
-    console.log(newDBData);
     inquirer
         .prompt({
             type: "input",
-            message: "What is the name of the department?",
+            message: "What is the name of the department? ",
             name: "newDepartment",
         })
         .then((answer) => {
@@ -44,12 +44,32 @@ function addDepartment() {
                 }
             );
         })
-        .catch((err)=>{
-            if (err) throw  err;
+        .catch((err) => {
+            if (err) throw err;
         });
 }
 
-// Get user questions
+// Display all Roles
+function viewRoles(){
+    return newDBData.query(
+        `
+        SELECT role.id, 
+        role.title, 
+        department.name as department, 
+        role.salary 
+        FROM role 
+        LEFT JOIN department 
+        ON role.department_id=department.id`,
+        (err, data) => {
+            if (err) throw err;
+            console.table(data);
+            getUserSelection(newDBData);
+        }
+    );
+
+}
+
+// Get user questions from db
 function getUserSelection(db) {
     newDBData = db;
     inquirer
@@ -81,21 +101,7 @@ function getUserSelection(db) {
             } else if (answers.option == "Update Employee Role") {
                 console.log("will update employee");
             } else if (answers.option == "View All Roles") {
-                db.query(
-                    `
-                    SELECT role.id, 
-                    role.title, 
-                    department.name as department, 
-                    role.salary 
-                    FROM role 
-                    LEFT JOIN department 
-                    ON role.department_id=department.id`,
-                    (err, data) => {
-                        if (err) throw err;
-                        console.table(data);
-                        getUserSelection(newDBData);
-                    }
-                );
+                
             } else if (answers.option == "Add Role") {
                 console.log("will add role");
             } else if (answers.option == "View All Departments") {
