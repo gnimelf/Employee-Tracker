@@ -25,7 +25,7 @@ const userOptions = [
 let newDBData;
 
 // Add a Department to the db
-function addDepartment() {
+function addDepartment(){
     inquirer
         .prompt({
             type: "input",
@@ -49,7 +49,7 @@ function addDepartment() {
         });
 }
 
-// Display all Roles
+// Display all Roles in db
 function viewRoles(){
     return newDBData.query(
         `
@@ -69,6 +69,29 @@ function viewRoles(){
 
 }
 
+// Display all Departments in db
+function viewAllDepartments(){
+    db.query(
+        `
+        SELECT 
+        employee.id, 
+        employee.first_name, 
+        employee.last_name, 
+        role.title,role.salary, 
+        department.name as department, 
+        CONCAT(mgr.first_name, " ", mgr.last_name) as manager
+        FROM employee 
+        LEFT JOIN role ON role.id = employee.role_id 
+        LEFT JOIN department ON department.id = role.department_id 
+        LEFT JOIN employee as mgr ON employee.id = mgr.manager_id`,
+        (err, data) => {
+            if (err) throw err;
+            console.table(data);
+            getUserSelection(newDBData);
+        }
+    );
+}
+
 // Get user questions from db
 function getUserSelection(db) {
     newDBData = db;
@@ -77,31 +100,13 @@ function getUserSelection(db) {
         .then((answers) => {
             // user answer to make db calls
             if (answers.option == "View All Employees") {
-                db.query(
-                    `
-                    SELECT 
-                    employee.id, 
-                    employee.first_name, 
-                    employee.last_name, 
-                    role.title,role.salary, 
-                    department.name as department, 
-                    CONCAT(mgr.first_name, " ", mgr.last_name) as manager
-                    FROM employee 
-                    LEFT JOIN role ON role.id = employee.role_id 
-                    LEFT JOIN department ON department.id = role.department_id 
-                    LEFT JOIN employee as mgr ON employee.id = mgr.manager_id`,
-                    (err, data) => {
-                        if (err) throw err;
-                        console.table(data);
-                        getUserSelection(newDBData);
-                    }
-                );
+                viewAllDepartments();
             } else if (answers.option == "Add employee") {
                 console.log("will add employee");
             } else if (answers.option == "Update Employee Role") {
                 console.log("will update employee");
             } else if (answers.option == "View All Roles") {
-                
+                viewRoles();
             } else if (answers.option == "Add Role") {
                 console.log("will add role");
             } else if (answers.option == "View All Departments") {
