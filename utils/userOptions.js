@@ -26,6 +26,7 @@ let newDBData;
 
 // Add a Department to the db
 function addDepartment() {
+    //TODO: NEED TO CHECK FOR EXISTING DEPARTMENTS BEFORE ADDING A NEW ONE
     inquirer
         .prompt({
             type: "input",
@@ -62,9 +63,70 @@ function viewAllDepartments() {
     );
 }
 
+function addEmployee() {
+    //TODO: NEED TO CHECK INPUT VALUES FOR EXISTING EMPLOYEES BEFORE ADDING A NEW ONE
+    inquirer
+        .prompt(
+            {
+                type: "input",
+                message: "What is the employee's first name? ",
+                name: "firstName",
+            },
+            {
+                type: "input",
+                message: "What is the name of the department? ",
+                name: "lastName",
+            },
+            {
+                // TODO: NEED TO GET LATEST LIST OF DEPARTMENTS
+                // SELECT name FROM department,
+                type: "choice",
+                message: "What is the name of the department? ",
+                name: "department",
+
+                choices: [
+                    "Sales",
+                    "Engineering",
+                    "Finance",
+                    "Legal",
+                    "Service",
+                ],
+            },
+            {
+                // TODO: NEED TO GET LATEST LIST OF MANAGERS
+                // select CONCAT(mgr.first_name, " ", mgr.last_name) as manager from employee LEFT JOIN employee as mgr ON employee.id = mgr.manager_id where mgr.manager_id is not null
+                type: "choice",
+                message: "What is the name of the department? ",
+                name: "department",
+                choices: [
+                    "Sales",
+                    "Engineering",
+                    "Finance",
+                    "Legal",
+                    "Service",
+                ],
+            }
+        )
+        .then((answer) => {
+            // console.log(`Your entered ${answer.newDepartment}`);
+            newDBData.query(
+                `INSERT INTO department (name)
+                VALUES ("${answer.newDepartment}")`,
+                (err, data) => {
+                    if (err) throw err;
+                    console.table(data);
+                    getUserSelection(newDBData);
+                }
+            );
+        })
+        .catch((err) => {
+            if (err) throw err;
+        });
+}
+
 // Display all Roles in db
 function viewRoles() {
-    return newDBData.query(
+    newDBData.query(
         `
         SELECT role.id, 
         role.title, 
@@ -104,6 +166,8 @@ function viewAllEmployees() {
     );
 }
 
+function updateEmployeeRole() {}
+
 // Get user questions from db
 function getUserSelection(db) {
     newDBData = db;
@@ -133,7 +197,5 @@ function getUserSelection(db) {
             console.log(err);
         });
 }
-
-function addEmployee() {}
 
 module.exports = { getUserSelection };
