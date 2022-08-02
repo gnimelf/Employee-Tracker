@@ -2,7 +2,7 @@ const connectToDB = require("../config/connection");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
 
-// 
+//
 let db;
 
 // Menu Options
@@ -24,10 +24,10 @@ const userOptions = [
     },
 ];
 
+const departmentAddQuestions = [];
 
 // Add a Department to the db   // DONE
 async function addDepartment() {
-
     let deptData;
 
     try {
@@ -47,62 +47,64 @@ async function addDepartment() {
 
     if (!found) {
         try {
-          const result = await db.query(
-            `INSERT INTO department (name)
-                VALUES ("${newDepartment}")`);  
+            const result = await db.query(
+                `INSERT INTO department (name)
+                VALUES ("${newDepartment}")`
+            );
         } catch (err) {
             console.log(err);
         }
-            getUserSelection();
+        getUserSelection();
     } else {
-        console.log("This department already exists!")
+        console.log("This department already exists!");
     }
 }
 
 // Display all departments in the db  // DONE
 async function viewAllDepartments() {
-   const [data] = await db.query(`SELECT * FROM department ORDER BY department.name`);
+    const [data] = await db.query(
+        `SELECT * FROM department ORDER BY department.name`
+    );
     console.table(data);
     getUserSelection();
-
 }
-
 
 // ADD EMPLOYEE
 async function addEmployee() {
-
-    let currentDepartments;
     let currentEmployees;
-    let managersList = ['none'];
+    let managerInfo;
+    let found;
 
-    // Get department names
+    // Get current employee names
     try {
-        [currentDepartments] = await db.query(`SELECT name FROM department`);
-    } catch (err) {
-        console.log(err);
-    }
-
-    // Get current employee data
-    try {
-        [currentEmployees] = await db.query(`
-        SELECT 
-        employee.first_name,
-        employee.last_name,
-        CONCAT(mgr.first_name, " ", mgr.last_name) as manager
-        FROM employee
-        LEFT JOIN employee as mgr ON employee.id = mgr.manager_id
-        `);
+        [currentEmployees] = await db.query(
+            `SELECT first_name, last_name FROM employee `
+        );
     } catch (error) {
         console.log(error);
     }
 
-    // Remove null values from managers list
-    currentEmployees.map((employee)=>{ 
-        if (employee.manager !== null) managersList.push(employee.manager);
-    });
+    // Get roles names
+    // set the concat value to name becuase inquirer looks for a name property by default
+    try {
+        [roleData] = await db.query(`select title as name, id value from role`);
+    } catch (error) {
+        console.log(error);
+    }
 
-    // Get user input
-    const {firstName, lastName, department} = await inquirer.prompt([
+    // Get managers info
+    // set the concat value to name becuase inquirer looks for a name property by default
+    try {
+        [managerInfo] = await db.query(
+            `select CONCAT(first_name, " ", last_name) as name, id as value from employee where manager_id is null`
+        );
+    } catch (error) {
+        console.log(error);
+    }
+
+
+    // User questions
+    const { firstName, lastName, roleId, manager } = await inquirer.prompt([
         {
             type: "input",
             message: "What is the employee's first name? ",
@@ -115,25 +117,38 @@ async function addEmployee() {
         },
         {
             type: "list",
-            message: "What is the employee's last name? ",
-            name: "manager",
-            choices: managersList,
+            message: "What is the employee's role? ",
+            name: "roleId",
+            choices: roleData,
         },
         {
             type: "list",
-            message: "What is the name of the department? ",
-            name: "department",
-            choices: currentDepartments,
-        }
+            message: "Who is the employee's manager? ",
+            name: "manager",
+            choices: managerInfo,
+        },
     ]);
 
-    // Check if user input matches employee tables
-    const found = currentEmployees.map((employee)=>{employee.first_name == firstName && employee.last_name == lastName});
 
-    if (found){
+    // Check if employee exists
+    currentEmployees.forEach((employee) => {
+        if (employee.first_name === firstName && employee.last_name === lastName) 
+        {
+            found = true;
+        }
+    });
+
+
+    // Repsonse to if employee exsists or not
+    if (found) {
         console.log(`${firstName} ${lastName} already exists`);
+        getUserSelection();
     } else {
-        //TODO: ADD USER TO DATABASE
+        await db.query(`
+            INSERT INTO employee (first_name, last_name, role_id, manager_id)
+            VALUES("${firstName}", "${lastName}", "${roleId}", "${manager}")
+        `);
+        getUserSelection();
     }
 }
 
@@ -183,7 +198,6 @@ function updateEmployeeRole() {}
 
 // Get user questions from db
 async function getUserSelection() {
-
     // connect to database
     db = await connectToDB();
 
