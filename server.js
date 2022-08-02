@@ -1,4 +1,4 @@
-const { getUserSelection } = require("./utils/userOptions");
+const { getUserSelection } = require("./db_utils/userOptions");
 
 // Star program
 function init() {

@@ -2,6 +2,9 @@ const connectToDB = require("../config/connection");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
 
+// 
+let db;
+
 // Menu Options
 const userOptions = [
     {
@@ -21,9 +24,8 @@ const userOptions = [
     },
 ];
 
-let db;
 
-// Add a Department to the db
+// Add a Department to the db   // DONE
 async function addDepartment() {
 
     let deptData;
@@ -57,78 +59,19 @@ async function addDepartment() {
     }
 }
 
-// Display all departments in the db
-function viewAllDepartments() {
-    db.query(
-        `SELECT * FROM department
-    ORDER BY department.name`,
-        (err, data) => {
-            if (err) throw err;
-            console.table(data);
-            // getUserSelection(newDBData);
-        }
-    );
+// Display all departments in the db  // DONE
+async function viewAllDepartments() {
+   const [data] = await db.query(`SELECT * FROM department ORDER BY department.name`);
+    console.table(data);
+    getUserSelection();
+
 }
 
-function addEmployee() {
-    //TODO: NEED TO CHECK INPUT VALUES FOR EXISTING EMPLOYEES BEFORE ADDING A NEW ONE
-    inquirer
-        .prompt(
-            {
-                type: "input",
-                message: "What is the employee's first name? ",
-                name: "firstName",
-            },
-            {
-                type: "input",
-                message: "What is the name of the department? ",
-                name: "lastName",
-            },
-            {
-                // TODO: NEED TO GET LATEST LIST OF DEPARTMENTS
-                // SELECT name FROM department,
-                type: "choice",
-                message: "What is the name of the department? ",
-                name: "department",
 
-                choices: [
-                    "Sales",
-                    "Engineering",
-                    "Finance",
-                    "Legal",
-                    "Service",
-                ],
-            },
-            {
-                // TODO: NEED TO GET LATEST LIST OF MANAGERS
-                // select CONCAT(mgr.first_name, " ", mgr.last_name) as manager from employee LEFT JOIN employee as mgr ON employee.id = mgr.manager_id where mgr.manager_id is not null
-                type: "choice",
-                message: "What is the name of the department? ",
-                name: "department",
-                choices: [
-                    "Sales",
-                    "Engineering",
-                    "Finance",
-                    "Legal",
-                    "Service",
-                ],
-            }
-        )
-        .then((answer) => {
-            // console.log(`Your entered ${answer.newDepartment}`);
-            newDBData.query(
-                `INSERT INTO department (name)
-                VALUES ("${answer.newDepartment}")`,
-                (err, data) => {
-                    if (err) throw err;
-                    console.table(data);
-                    getUserSelection();
-                }
-            );
-        })
-        .catch((err) => {
-            if (err) throw err;
-        });
+// ADD EMPLOYEE
+async function addEmployee() {
+
+
 }
 
 // Display all Roles in db
@@ -177,6 +120,8 @@ function updateEmployeeRole() {}
 
 // Get user questions from db
 async function getUserSelection() {
+
+    // connect to database
     db = await connectToDB();
 
     inquirer
@@ -185,8 +130,8 @@ async function getUserSelection() {
             // user answer to make db calls
             if (answers.option == "View All Employees") {
                 viewAllEmployees();
-            } else if (answers.option == "Add employee") {
-                console.log("will add employee");
+            } else if (answers.option == "Add Employee") {
+                addEmployee();
             } else if (answers.option == "Update Employee Role") {
                 console.log("will update employee");
             } else if (answers.option == "View All Roles") {
