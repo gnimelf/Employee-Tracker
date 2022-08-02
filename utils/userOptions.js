@@ -1,6 +1,5 @@
-const mysql = require("mysql2");
+const connectToDB = require("../config/connection");
 const inquirer = require("inquirer");
-require("dotenv").config();
 const cTable = require("console.table");
 
 // Menu Options
@@ -22,32 +21,40 @@ const userOptions = [
     },
 ];
 
-let newDBData;
+let db;
 
 // Add a Department to the db
-function addDepartment() {
-    //TODO: NEED TO CHECK FOR EXISTING DEPARTMENTS BEFORE ADDING A NEW ONE
-    inquirer
-        .prompt({
-            type: "input",
-            message: "What is the name of the department? ",
-            name: "newDepartment",
-        })
-        .then((answer) => {
-            // console.log(`Your entered ${answer.newDepartment}`);
-            newDBData.query(
-                `INSERT INTO department (name)
-                VALUES ("${answer.newDepartment}")`,
-                (err, data) => {
-                    if (err) throw err;
-                    console.table(data);
-                    getUserSelection(newDBData);
-                }
-            );
-        })
-        .catch((err) => {
-            if (err) throw err;
-        });
+async function addDepartment() {
+
+    let deptData;
+
+    try {
+        [deptData] = await db.query(`SELECT name FROM department`);
+    } catch (err) {
+        console.log(err);
+    }
+    const { newDepartment } = await inquirer.prompt({
+        type: "input",
+        message: "What is the name of the department? ",
+        name: "newDepartment",
+    });
+
+    const found = deptData.some(({ name }) => {
+        return name == newDepartment;
+    });
+
+    if (!found) {
+        try {
+          const result = await db.query(
+            `INSERT INTO department (name)
+                VALUES ("${newDepartment}")`);  
+        } catch (err) {
+            console.log(err);
+        }
+            getUserSelection();
+    } else {
+        console.log("This department already exists!")
+    }
 }
 
 // Display all departments in the db
@@ -58,7 +65,7 @@ function viewAllDepartments() {
         (err, data) => {
             if (err) throw err;
             console.table(data);
-            getUserSelection(newDBData);
+            // getUserSelection(newDBData);
         }
     );
 }
@@ -115,7 +122,7 @@ function addEmployee() {
                 (err, data) => {
                     if (err) throw err;
                     console.table(data);
-                    getUserSelection(newDBData);
+                    getUserSelection();
                 }
             );
         })
@@ -138,7 +145,7 @@ function viewRoles() {
         (err, data) => {
             if (err) throw err;
             console.table(data);
-            getUserSelection(newDBData);
+            getUserSelection();
         }
     );
 }
@@ -161,7 +168,7 @@ function viewAllEmployees() {
         (err, data) => {
             if (err) throw err;
             console.table(data);
-            getUserSelection(newDBData);
+            getUserSelection();
         }
     );
 }
@@ -169,8 +176,9 @@ function viewAllEmployees() {
 function updateEmployeeRole() {}
 
 // Get user questions from db
-function getUserSelection(db) {
-    newDBData = db;
+async function getUserSelection() {
+    db = await connectToDB();
+
     inquirer
         .prompt(userOptions)
         .then((answers) => {
@@ -188,7 +196,7 @@ function getUserSelection(db) {
             } else if (answers.option == "View All Departments") {
                 viewAllDepartments();
             } else if (answers.option == "Add Department") {
-                addDepartment(newDBData);
+                addDepartment();
             } else {
                 process.exit(0);
             }

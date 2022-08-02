@@ -1,6 +1,5 @@
 const { getUserSelection } = require("./utils/userOptions");
 
-
 // Star program
 function init() {
     // Logo
@@ -19,8 +18,7 @@ function init() {
                                       |___/                      
     `);
 
-    getUserSelection(db);
+    getUserSelection();
 }
-
 
 init();
