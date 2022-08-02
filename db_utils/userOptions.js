@@ -24,8 +24,6 @@ const userOptions = [
     },
 ];
 
-const departmentAddQuestions = [];
-
 // Add a Department to the db   // DONE
 async function addDepartment() {
     let deptData;
@@ -73,7 +71,7 @@ async function viewAllDepartments() {
 async function addEmployee() {
     let currentEmployees;
     let managerInfo;
-    let found;
+    let employeeFound;
 
     // Get current employee names
     try {
@@ -134,13 +132,13 @@ async function addEmployee() {
     currentEmployees.forEach((employee) => {
         if (employee.first_name === firstName && employee.last_name === lastName) 
         {
-            found = true;
+            employeeFound = true;
         }
     });
 
 
-    // Repsonse to if employee exsists or not
-    if (found) {
+    // Repsonse to employee if exsists or not
+    if (employeeFound) {
         console.log(`${firstName} ${lastName} already exists`);
         getUserSelection();
     } else {
@@ -153,8 +151,8 @@ async function addEmployee() {
 }
 
 // Display all Roles in db
-function viewRoles() {
-    newDBData.query(
+async function viewRoles() {
+   const [data] = await db.query(
         `
         SELECT role.id, 
         role.title, 
@@ -162,18 +160,20 @@ function viewRoles() {
         role.salary 
         FROM role 
         LEFT JOIN department 
-        ON role.department_id=department.id`,
-        (err, data) => {
-            if (err) throw err;
-            console.table(data);
-            getUserSelection();
-        }
+        ON role.department_id=department.id`
     );
+            
+    console.table(data);
+    getUserSelection();
+}
+
+async function addRole() {
+
 }
 
 // Display all Employee in db
-function viewAllEmployees() {
-    db.query(
+async function viewAllEmployees() {
+   const [data] = await db.query(
         `
         SELECT 
         employee.id, 
@@ -185,13 +185,10 @@ function viewAllEmployees() {
         FROM employee 
         LEFT JOIN role ON role.id = employee.role_id 
         LEFT JOIN department ON department.id = role.department_id 
-        LEFT JOIN employee as mgr ON employee.id = mgr.manager_id`,
-        (err, data) => {
-            if (err) throw err;
-            console.table(data);
-            getUserSelection();
-        }
+        LEFT JOIN employee as mgr ON employee.manager_id = mgr.id`
     );
+        console.table(data);
+        getUserSelection();
 }
 
 function updateEmployeeRole() {}
