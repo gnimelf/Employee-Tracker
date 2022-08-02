@@ -71,7 +71,70 @@ async function viewAllDepartments() {
 // ADD EMPLOYEE
 async function addEmployee() {
 
+    let currentDepartments;
+    let currentEmployees;
+    let managersList = ['none'];
 
+    // Get department names
+    try {
+        [currentDepartments] = await db.query(`SELECT name FROM department`);
+    } catch (err) {
+        console.log(err);
+    }
+
+    // Get current employee data
+    try {
+        [currentEmployees] = await db.query(`
+        SELECT 
+        employee.first_name,
+        employee.last_name,
+        CONCAT(mgr.first_name, " ", mgr.last_name) as manager
+        FROM employee
+        LEFT JOIN employee as mgr ON employee.id = mgr.manager_id
+        `);
+    } catch (error) {
+        console.log(error);
+    }
+
+    // Remove null values from managers list
+    currentEmployees.map((employee)=>{ 
+        if (employee.manager !== null) managersList.push(employee.manager);
+    });
+
+    // Get user input
+    const {firstName, lastName, department} = await inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the employee's first name? ",
+            name: "firstName",
+        },
+        {
+            type: "input",
+            message: "What is the employee's last name? ",
+            name: "lastName",
+        },
+        {
+            type: "list",
+            message: "What is the employee's last name? ",
+            name: "manager",
+            choices: managersList,
+        },
+        {
+            type: "list",
+            message: "What is the name of the department? ",
+            name: "department",
+            choices: currentDepartments,
+        }
+    ]);
+
+    // Check if user input matches employee tables
+    const found = currentEmployees.map((employee)=>{employee.first_name == firstName && employee.last_name == lastName});
+
+    if (found){
+        console.log(`${firstName} ${lastName} already exists`);
+    } else {
+        //TODO: ADD USER TO DATABASE
+    }
 }
 
 // Display all Roles in db
