@@ -72,7 +72,7 @@ async function addEmployee() {
     let currentEmployees;
     let managerInfo;
     let employeeFound;
- 
+
     // Get current employee names
     try {
         [currentEmployees] = await db.query(
@@ -126,13 +126,12 @@ async function addEmployee() {
         },
     ]);
 
-
     // Check if employee exists
     currentEmployees.forEach((employee) => {
         if (
             employee.first_name.toLowerCase() === firstName.toLowerCase() &&
             employee.last_name.toLowerCase() === lastName.toLowerCase()
-            ) 
+        )
             employeeFound = true;
     });
 
@@ -151,7 +150,7 @@ async function addEmployee() {
 
 // Display all Roles in db
 async function viewRoles() {
-   const [data] = await db.query(
+    const [data] = await db.query(
         `
         SELECT role.id, 
         role.title, 
@@ -161,7 +160,7 @@ async function viewRoles() {
         LEFT JOIN department 
         ON role.department_id=department.id`
     );
-            
+
     console.table(data);
     getUserSelection();
 }
@@ -179,7 +178,9 @@ async function addRole() {
 
     // Get department info
     try {
-        [departmentData] = await db.query(`SELECT name, id as value from department`)
+        [departmentData] = await db.query(
+            `SELECT name, id as value from department`
+        );
     } catch (error) {
         console.log(error);
     }
@@ -199,33 +200,34 @@ async function addRole() {
             type: "list",
             message: "which department does the role belong to? ",
             name: "departmentName",
-            choices: departmentData
-        }
+            choices: departmentData,
+        },
     ]);
 
-    console.log(`Role Name: ${roleName}, Salary: ${salaryAmount}, Department: ${departmentName}`);
+    console.log(
+        `Role Name: ${roleName}, Salary: ${salaryAmount}, Department: ${departmentName}`
+    );
 
     // Check if department already exists
-    roleData.forEach(({title}) => {
-        if (title.toLowerCase() === roleName.toLowerCase()) 
-        roleFound = true;
+    roleData.forEach(({ title }) => {
+        if (title.toLowerCase() === roleName.toLowerCase()) roleFound = true;
     });
-    
-    if (roleFound){
+
+    if (roleFound) {
         console.log(`\nno good, ${roleName} already exists\n`);
         getUserSelection();
     } else {
         // console.log(`${roleName}, ${salaryAmount}, ${departmentName}`)
         await db.query(`INSERT INTO role (title, salary, department_id)
         VALUES ("${roleName}", "${salaryAmount}", "${departmentName}")
-        `)
+        `);
         getUserSelection();
     }
 }
 
 // Display all employee in db
 async function viewAllEmployees() {
-   const [data] = await db.query(
+    const [data] = await db.query(
         `
         SELECT 
         employee.id, 
@@ -239,12 +241,50 @@ async function viewAllEmployees() {
         LEFT JOIN department ON department.id = role.department_id 
         LEFT JOIN employee as mgr ON employee.manager_id = mgr.id`
     );
-        console.table(data);
-        getUserSelection();
+    console.table(data);
+    getUserSelection();
 }
 
 async function updateEmployeeRole() {
+    const [employeeList] = await db.query(
+        `SELECT
+        id,
+        first_name,
+        last_name,
+        CONCAT(employee.first_name, " " ,employee.last_name) as name,
+        role_id as value
+        FROM employee`
+    );
 
+    const [roleList] = await db.query(
+        `SELECT
+        title as name,
+        id as value
+        FROM role`
+    );
+
+    const { employeeName, role } = await inquirer.prompt([
+        {
+            type: "list",
+            name: "employeeName",
+            message: "Which employee's role do you want to update? ",
+            choices: employeeList,
+        },
+        {
+            type: "list",
+            name: "role",
+            message: "Which role do you want to assign the selected employee? ",
+            choices: roleList,
+        },
+    ]);
+
+    await db.query(
+        `UPDATE employee
+        SET role_id = '${role}'
+        WHERE role_id = '${employeeName}'
+    `
+    );
+    getUserSelection();
 }
 
 // Get user questions from db
@@ -261,7 +301,7 @@ async function getUserSelection() {
             } else if (answers.option == "Add Employee") {
                 addEmployee();
             } else if (answers.option == "Update Employee Role") {
-                console.log("will update employee");
+                updateEmployeeRole();
             } else if (answers.option == "View All Roles") {
                 viewRoles();
             } else if (answers.option == "Add Role") {
