@@ -34,6 +34,7 @@ If your README is long, add a table of contents to make it easy for users to fin
     - `add an employee` - prompts the user to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
     - `update an employee role` - prompts the user to select an employee to update and their new role. This information is then updated in the database 
 
+![screenshot](./assets/screenshot.png)
 
 ## DEMO
 
