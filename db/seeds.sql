@@ -24,6 +24,3 @@ VALUES ('John', 'Doe', 1, null),
        ('Sarah', 'Lourd', 7, null),
        ('Tom', 'Allen', 8, 7);
  
--- Add update to change manager number to name
--- UPDATE employee SET name = CONST(first_name, "' ", last_name)
--- WHERE id = 1;
