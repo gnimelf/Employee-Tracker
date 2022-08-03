@@ -22,8 +22,8 @@ If your README is long, add a table of contents to make it easy for users to fin
 2. Install nodejs https://nodejs.org/en/download/
 3. Run npm i in terminal while under the repo directory
 4. Create a .env file in the root of this project folder and then add following to it:
-    - DB_USERNAME = '[an admin user]'
-    - DB_PASSWORD = '[that users password]'
+    - DB_USERNAME = '[an admin username]'
+    - DB_PASSWORD = '[that user's password]'
     
 ## Usage
 
