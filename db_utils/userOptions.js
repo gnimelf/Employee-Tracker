@@ -24,7 +24,7 @@ const userOptions = [
     },
 ];
 
-// Add a Department to the db   // DONE
+// Add a department to db   // DONE
 async function addDepartment() {
     let deptData;
 
@@ -58,7 +58,7 @@ async function addDepartment() {
     }
 }
 
-// Display all departments in the db  // DONE
+// Display all departments in db  // DONE
 async function viewAllDepartments() {
     const [data] = await db.query(
         `SELECT * FROM department ORDER BY department.name`
@@ -67,12 +67,12 @@ async function viewAllDepartments() {
     getUserSelection();
 }
 
-// ADD EMPLOYEE
+// add Employee to db
 async function addEmployee() {
     let currentEmployees;
     let managerInfo;
     let employeeFound;
-
+ 
     // Get current employee names
     try {
         [currentEmployees] = await db.query(
@@ -99,7 +99,6 @@ async function addEmployee() {
     } catch (error) {
         console.log(error);
     }
-
 
     // User questions
     const { firstName, lastName, roleId, manager } = await inquirer.prompt([
@@ -130,12 +129,12 @@ async function addEmployee() {
 
     // Check if employee exists
     currentEmployees.forEach((employee) => {
-        if (employee.first_name === firstName && employee.last_name === lastName) 
-        {
+        if (
+            employee.first_name.toLowerCase() === firstName.toLowerCase() &&
+            employee.last_name.toLowerCase() === lastName.toLowerCase()
+            ) 
             employeeFound = true;
-        }
     });
-
 
     // Repsonse to employee if exsists or not
     if (employeeFound) {
@@ -167,11 +166,64 @@ async function viewRoles() {
     getUserSelection();
 }
 
+// Add role to db
 async function addRole() {
+    let roleFound;
 
+    // Get role info
+    try {
+        [roleData] = await db.query(`SELECT * FROM role`);
+    } catch (error) {
+        console.log(err);
+    }
+
+    // Get department info
+    try {
+        [departmentData] = await db.query(`SELECT name, id as value from department`)
+    } catch (error) {
+        console.log(error);
+    }
+
+    const { roleName, salaryAmount, departmentName } = await inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the name of the role? ",
+            name: "roleName",
+        },
+        {
+            type: "input",
+            message: "What is the salary of the role? ",
+            name: "salaryAmount",
+        },
+        {
+            type: "list",
+            message: "which department does the role belong to? ",
+            name: "departmentName",
+            choices: departmentData
+        }
+    ]);
+
+    console.log(`Role Name: ${roleName}, Salary: ${salaryAmount}, Department: ${departmentName}`);
+
+    // Check if department already exists
+    roleData.forEach(({title}) => {
+        if (title.toLowerCase() === roleName.toLowerCase()) 
+        roleFound = true;
+    });
+    
+    if (roleFound){
+        console.log(`\nno good, ${roleName} already exists\n`);
+        getUserSelection();
+    } else {
+        // console.log(`${roleName}, ${salaryAmount}, ${departmentName}`)
+        await db.query(`INSERT INTO role (title, salary, department_id)
+        VALUES ("${roleName}", "${salaryAmount}", "${departmentName}")
+        `)
+        getUserSelection();
+    }
 }
 
-// Display all Employee in db
+// Display all employee in db
 async function viewAllEmployees() {
    const [data] = await db.query(
         `
@@ -191,7 +243,9 @@ async function viewAllEmployees() {
         getUserSelection();
 }
 
-function updateEmployeeRole() {}
+async function updateEmployeeRole() {
+
+}
 
 // Get user questions from db
 async function getUserSelection() {
@@ -211,7 +265,7 @@ async function getUserSelection() {
             } else if (answers.option == "View All Roles") {
                 viewRoles();
             } else if (answers.option == "Add Role") {
-                console.log("will add role");
+                addRole();
             } else if (answers.option == "View All Departments") {
                 viewAllDepartments();
             } else if (answers.option == "Add Department") {
