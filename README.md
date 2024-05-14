@@ -23,7 +23,9 @@ If your README is long, add a table of contents to make it easy for users to fin
 3. Run npm i in terminal while under the repo directory
 4. Create a .env file in the root of this project folder and then add following to it:
     - DB_USERNAME = '[an admin username]'
-    - DB_PASSWORD = '[that user's password]'
+    - DB_PASSWORD = '[the user's password]'
+    - DB_HOST = '[IP of the database server]
+    - DB_NAME = '[name of the database]
 5. In the terminal login to msql while in project directory 
     - Run 'source db/schema.sql'
     - Run 'source db/seeds.sql'
